@@ -1,11 +1,38 @@
-const allure = require('allure-commandline')
+import type { Options } from '@wdio/types'
 
-export const config: WebdriverIO.Config = {
+export const config: Options.Testrunner = {
     //
     // ====================
     // Runner Configuration
     // ====================
     //
+    //
+    // =====================
+    // ts-node Configurations
+    // =====================
+    //
+    // You can write tests using TypeScript to get autocompletion and type safety.
+    // You will need typescript and ts-node installed as devDependencies.
+    // WebdriverIO will automatically detect if these dependencies are installed
+    // and will compile your config and tests for you.
+    // If you need to configure how ts-node runs please use the
+    // environment variables for ts-node or use wdio config's autoCompileOpts section.
+    //
+
+    autoCompileOpts: {
+        autoCompile: true,
+        // see https://github.com/TypeStrong/ts-node#cli-and-programmatic-options
+        // for all available options
+        tsNodeOpts: {
+            transpileOnly: true,
+            project: 'test/tsconfig.json'
+        }
+        // tsconfig-paths is only used if "tsConfigPathsOpts" are provided, if you
+        // do please make sure "tsconfig-paths" is installed as dependency
+        // tsConfigPathsOpts: {
+        //     baseUrl: './'
+        // }
+    },
     //
     // ==================
     // Specify Test Files
@@ -29,17 +56,6 @@ export const config: WebdriverIO.Config = {
     exclude: [
         // 'path/to/excluded/files'
     ],
-
-    suites: {
-        debug: [
-            "./test/specs/e2e/Product.ts"
-        ],
-
-        e2e: [
-            "./test/specs/e2e/Searchbar.ts",
-            "./test/specs/e2e/Product.ts"
-        ]
-    },
     //
     // ============
     // Capabilities
@@ -56,7 +72,7 @@ export const config: WebdriverIO.Config = {
     // and 30 processes will get spawned. The property handles how many capabilities
     // from the same test should run tests.
     //
-    maxInstances: 1,
+    maxInstances: 10,
     //
     // If you have trouble getting all important capabilities together, check out the
     // Sauce Labs platform configurator - a great tool to configure your capabilities:
@@ -67,12 +83,9 @@ export const config: WebdriverIO.Config = {
         // maxInstances can get overwritten per capability. So if you have an in-house Selenium
         // grid with only 5 firefox instances available you can make sure that not more than
         // 5 instances get started at a time.
-        maxInstances: 1,
+        maxInstances: 5,
         //
         browserName: 'chrome',
-        // "goog:chromeOptions": {
-        //     args: ["--headless"]
-        // },
         acceptInsecureCerts: true
         // If outputDir is provided WebdriverIO can capture driver session logs
         // it is possible to configure which logTypes to include/exclude.
@@ -86,7 +99,7 @@ export const config: WebdriverIO.Config = {
     // Define all options that are relevant for the WebdriverIO instance here
     //
     // Level of logging verbosity: trace | debug | info | warn | error | silent
-    logLevel: 'error',
+    logLevel: 'info',
     //
     // Set specific log levels per logger
     // loggers:
@@ -148,12 +161,7 @@ export const config: WebdriverIO.Config = {
     // Test reporter for stdout.
     // The only one supported by default is 'dot'
     // see also: https://webdriver.io/docs/dot-reporter
-    reporters: ['spec', ['allure', {
-        //@ts-ignore
-        outputDir: 'allure-results',
-        disableWebdriverStepsReporting: true,
-        disableWebdriverScreenshotsReporting: false,
-    }]],
+    reporters: ['spec'],
 
 
     
@@ -185,10 +193,19 @@ export const config: WebdriverIO.Config = {
      * @param  {String} cid      capability id (e.g 0-0)
      * @param  {[type]} caps     object containing capabilities for session that will be spawn in the worker
      * @param  {[type]} specs    specs to be run in the worker process
-     * @param  {[type]} args     object that will be merged with the main configuration once worker is initialised
+     * @param  {[type]} args     object that will be merged with the main configuration once worker is initialized
      * @param  {[type]} execArgv list of string arguments passed to the worker process
      */
     // onWorkerStart: function (cid, caps, specs, args, execArgv) {
+    // },
+    /**
+     * Gets executed just after a worker process has exited.
+     * @param  {String} cid      capability id (e.g 0-0)
+     * @param  {Number} exitCode 0 - success, 1 - fail
+     * @param  {[type]} specs    specs to be run in the worker process
+     * @param  {Number} retries  number of retries used
+     */
+    // onWorkerEnd: function (cid, exitCode, specs, retries) {
     // },
     /**
      * Gets executed just before initialising the webdriver session and test framework. It allows you
@@ -225,9 +242,8 @@ export const config: WebdriverIO.Config = {
     /**
      * Function to be executed before a test (in Mocha/Jasmine) starts.
      */
-    beforeTest: function (test, context) {
-        browser.maximizeWindow();
-    },
+    // beforeTest: function (test, context) {
+    // },
     /**
      * Hook that gets executed _before_ a hook within the suite starts (e.g. runs before calling
      * beforeEach in Mocha)
@@ -260,12 +276,6 @@ export const config: WebdriverIO.Config = {
      */
     // afterSuite: function (suite) {
     // },
-
-    afterTest: function (test, scenario, { error, duration, passed }) {
-        if (error) {
-          browser.takeScreenshot();
-        }
-      },
     /**
      * Runs after a WebdriverIO command gets executed
      * @param {String} commandName hook command name
@@ -300,32 +310,13 @@ export const config: WebdriverIO.Config = {
      * @param {Array.<Object>} capabilities list of capabilities details
      * @param {<Object>} results object containing test results
      */
-/*     onComplete: function() {
-        const reportError = new Error('Could not generate Allure report')
-        const generation = allure(['generate', 'allure-results', '--clean'])
-        return new Promise((resolve, reject) => {
-            const generationTimeout = setTimeout(
-                () => reject(reportError),
-                5000)
-
-            generation.on('exit', function(exitCode) {
-                clearTimeout(generationTimeout)
-
-                if (exitCode !== 0) {
-                    return reject(reportError)
-                }
-
-                console.log('Allure report successfully generated')
-                resolve()
-            })
-        })
-    }
-*/
+    // onComplete: function(exitCode, config, capabilities, results) {
+    // },
     /**
     * Gets executed when a refresh happens.
     * @param {String} oldSessionId session ID of the old session
     * @param {String} newSessionId session ID of the new session
     */
-    //onReload: function(oldSessionId, newSessionId) {
-    //}
+    // onReload: function(oldSessionId, newSessionId) {
+    // }
 }
